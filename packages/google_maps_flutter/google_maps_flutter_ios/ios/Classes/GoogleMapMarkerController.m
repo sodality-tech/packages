@@ -92,6 +92,10 @@
 
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
+
+    self.marker.appearAnimation = kGMSMarkerAnimationPop;
+    self.marker.opacity = 0.5;
+    
   NSNumber *alpha = data[@"alpha"];
   if (alpha && alpha != (id)[NSNull null]) {
     [self setAlpha:[alpha floatValue]];
