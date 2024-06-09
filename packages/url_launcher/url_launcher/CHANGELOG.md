@@ -1,3 +1,17 @@
+## 6.3.0
+
+* Adds `BrowserConfiguration` parameter, to configure in-app browser views, such as Android Custom Tabs or SFSafariViewController.
+* Adds `showTitle` to `BrowserConfiguration`, to allow showing webpage titles in in-app browser views.
+* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+
+## 6.2.6
+
+* Updates minimum iOS implementation version to include a privacy manifest.
+
+## 6.2.5
+
+* Removes use of deprecated `renderView` API.
+
 ## 6.2.4
 
 * Updates support matrix in README to indicate that iOS 11 is no longer supported.

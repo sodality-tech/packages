@@ -1,3 +1,74 @@
+## 20.0.1
+
+* [cpp] Fixes handling of null class arguments.
+
+## 20.0.0
+
+* Moves all codec logic to single custom codec per file.
+* **Breaking Change** Limits the number of total custom types to 126.
+  * If more than 126 custom types are needed, consider breaking up your definition files.
+* Fixes bug that prevented collection subtypes from being added properly.
+* [swift] Adds `@unchecked Sendable` to codec method.
+* [objc] [cpp] Fixes bug that prevented setting custom header import path.
+
+## 19.0.2
+
+* [kotlin] Adds the `@JvmOverloads` to the `HostApi` setUp method. This prevents the calling Java code from having to provide an empty `String` as Kotlin provides it by default  
+
+## 19.0.1
+
+* [dart] Updates `PigeonInstanceMangerApi` to use the shared api channel code.
+
+## 19.0.0
+
+* **Breaking Change** [swift] Removes `FlutterError` in favor of `PigeonError`.
+* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+
+## 18.0.1
+
+* Fixes unnecessary calls of `toList` and `fromList` when encoding/decoding data classes.
+* [kotlin] Changes to some code to make it more idiomatic.
+* Removes collisions with the word `list`.
+
+## 18.0.0
+
+* Adds message channel suffix option to all APIs.
+* **Breaking Change** [dart] Changes `FlutterApi` `setup` to `setUp`.
+
+## 17.3.0
+
+* [swift] Adds `@SwiftClass` annotation to allow choice between `struct` and `class` for data classes.
+* [cpp] Adds support for recursive data class definitions.
+
+## 17.2.0
+
+* [dart] Adds implementation for `@ProxyApi`.
+
+## 17.1.3
+
+* [objc] Fixes double prefixes added to enum names.
+
+## 17.1.2
+
+* [swift] Separates message call code generation into separate methods.
+
+## 17.1.1
+
+* Removes heap allocation in generated C++ code.
+
+## 17.1.0
+
+* [kotlin] Adds `includeErrorClass` to `KotlinOptions`.
+* Updates minimum supported SDK version to Flutter 3.13/Dart 3.1.
+
+## 17.0.0
+
+* **Breaking Change** [kotlin] Converts Kotlin enum case generation to SCREAMING_SNAKE_CASE.
+  * Updates `writeEnum` function to adhere to Kotlin naming conventions.
+  * Improves handling of complex names with enhanced regex patterns.
+  * Expands unit tests for comprehensive name conversion validation.
+  * **Migration Note**: This change modifies the naming convention of Kotlin enum cases generated from the Pigeon package. It is recommended to review the impact on your existing codebase and update any dependent code accordingly.
+
 ## 16.0.5
 
 * Adds ProxyApi to AST generation.

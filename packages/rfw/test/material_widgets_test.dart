@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rfw/formats.dart' show parseLibraryFile;
@@ -438,4 +439,248 @@ void main() {
       skip: !runGoldens,
     );
   });
+
+  testWidgets('Implement InkResponse properties', (WidgetTester tester) async {
+    final Runtime runtime = setupRuntime();
+    final DynamicContent data = DynamicContent();
+    final List<String> eventLog = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: false),
+        home: RemoteWidget(
+          runtime: runtime,
+          data: data,
+          widget: const FullyQualifiedWidgetName(testName, 'root'),
+          onEvent: (String eventName, DynamicMap eventArguments) {
+            eventLog.add('$eventName $eventArguments');
+          },
+        ),
+      ),
+    );
+    expect(
+      tester.takeException().toString(),
+      contains('Could not find remote widget named'),
+    );
+
+    runtime.update(testName, parseLibraryFile('''
+      import core;
+      import material;
+      widget root = Scaffold(
+        body: Center(
+          child: InkResponse(
+            onTap: event 'onTap' {},
+            onHover: event 'onHover' {},
+            borderRadius: [{x: 8.0, y: 8.0}, {x: 8.0, y: 8.0}, {x: 8.0, y: 8.0}, {x: 8.0, y: 8.0}],
+            hoverColor: 0xFF00FF00,
+            splashColor: 0xAA0000FF,
+            highlightColor: 0xAAFF0000,
+            containedInkWell: true,
+            highlightShape: 'circle',
+            child: Text(text: 'InkResponse'),
+          ),
+        ),
+      );
+    '''));
+    await tester.pump();
+
+    expect(find.byType(InkResponse), findsOneWidget);
+
+    // Hover
+    final Offset center = tester.getCenter(find.byType(InkResponse));
+    final TestGesture gesture =
+        await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer();
+    addTearDown(gesture.removePointer);
+    await gesture.moveTo(center);
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(RemoteWidget),
+      matchesGoldenFile('goldens/material_test.ink_response_hover.png'),
+      skip: !runGoldens,
+    );
+    expect(eventLog, contains('onHover {}'));
+
+    // Tap
+    await gesture.down(center);
+    await tester.pump(); // start gesture
+    await tester.pump(const Duration(
+        milliseconds: 200)); // wait for splash to be well under way
+
+    await expectLater(
+      find.byType(RemoteWidget),
+      matchesGoldenFile('goldens/material_test.ink_response_tap.png'),
+      skip: !runGoldens,
+    );
+    await gesture.up();
+    await tester.pump();
+
+    expect(eventLog, contains('onTap {}'));
+  });
+
+  testWidgets('Implement Material properties', (WidgetTester tester) async {
+    final Runtime runtime = setupRuntime();
+    final DynamicContent data = DynamicContent();
+    final List<String> eventLog = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: false),
+        home: RemoteWidget(
+          runtime: runtime,
+          data: data,
+          widget: const FullyQualifiedWidgetName(testName, 'root'),
+          onEvent: (String eventName, DynamicMap eventArguments) {
+            eventLog.add('$eventName $eventArguments');
+          },
+        ),
+      ),
+    );
+    expect(
+      tester.takeException().toString(),
+      contains('Could not find remote widget named'),
+    );
+
+    runtime.update(testName, parseLibraryFile('''
+      import core;
+      import material;
+      widget root = Material(
+        type: 'circle',
+        elevation: 6.0,
+        color: 0xFF0000FF,
+        shadowColor: 0xFF00FF00,
+        surfaceTintColor: 0xff0000ff,
+        animationDuration: 300,
+        borderOnForeground: false,
+        child: SizedBox(
+          width: 20.0,
+          height: 20.0,
+        ),
+      );
+    '''));
+    await tester.pump();
+
+    expect(tester.widget<Material>(find.byType(Material)).animationDuration,
+        const Duration(milliseconds: 300));
+    expect(tester.widget<Material>(find.byType(Material)).borderOnForeground,
+        false);
+    await expectLater(
+      find.byType(RemoteWidget),
+      matchesGoldenFile('goldens/material_test.material_properties.png'),
+      skip: !runGoldens,
+    );
+
+    runtime.update(testName, parseLibraryFile('''
+      import core;
+      import material;
+      widget root = Material(
+        clipBehavior: 'antiAlias',
+        shape: { type: 'circle', side: { width: 10.0, color: 0xFF0066FF } },
+        child: SizedBox(
+          width: 20.0,
+          height: 20.0,
+        ),
+      );
+    '''));
+    await tester.pump();
+
+    expect(tester.widget<Material>(find.byType(Material)).clipBehavior,
+        Clip.antiAlias);
+  });
+
+  testWidgets('Slider properties', (WidgetTester tester) async {
+    final Runtime runtime = setupRuntime();
+    final DynamicContent data = DynamicContent();
+    final List<String> eventLog = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: false),
+        home: RemoteWidget(
+          runtime: runtime,
+          data: data,
+          widget: const FullyQualifiedWidgetName(testName, 'root'),
+          onEvent: (String eventName, DynamicMap eventArguments) {
+            eventLog.add('$eventName $eventArguments');
+          },
+        ),
+      ),
+    );
+    expect(
+      tester.takeException().toString(),
+      contains('Could not find remote widget named'),
+    );
+
+    runtime.update(testName, parseLibraryFile('''
+      import core;
+      import material;
+      widget root = Scaffold(
+        body: Center(
+          child: Slider(
+          onChanged: event 'slider' {  },
+          min: 10.0,
+          max: 100.0,
+          divisions: 100,
+          value: 20.0,
+          activeColor: 0xFF0000FF,
+          inactiveColor: 0xFF00FF00,
+          secondaryActiveColor: 0xFFFF0000,
+          thumbColor: 0xFF000000,
+      )));
+    '''));
+    await tester.pump();
+
+    final Finder sliderFinder = find.byType(Slider);
+    final Slider slider = tester.widget<Slider>(sliderFinder);
+    expect(slider.value, 20.0);
+    expect(slider.min, 10.0);
+    expect(slider.max, 100.0);
+    expect(slider.divisions, 100);
+    expect(slider.activeColor, const Color(0xFF0000FF));
+    expect(slider.inactiveColor, const Color(0xFF00FF00));
+    expect(slider.secondaryActiveColor, const Color(0xFFFF0000));
+    expect(slider.thumbColor, const Color(0xFF000000));
+
+    runtime.update(testName, parseLibraryFile('''
+      import core;
+      import material;
+      
+      widget root = Scaffold(
+          body: Container(    
+            child: Slider(
+            onChanged: event 'slider' {  },
+            onChangeStart: event 'slider.start' {  },
+            onChangeEnd: event 'slider.end' {  },
+            min: 0.0,
+            max: 100.0,
+            divisions: 100,
+            value: 0.0,
+        )));
+    '''));
+    await tester.pump();
+
+    //drag slider
+    await _slideToValue(tester, sliderFinder, 20.0);
+    await tester.pumpAndSettle();
+    expect(eventLog,
+        contains(kIsWeb ? 'slider {value: 20}' : 'slider {value: 20.0}'));
+    expect(
+        eventLog,
+        contains(
+            kIsWeb ? 'slider.start {value: 0}' : 'slider.start {value: 0.0}'));
+    expect(
+        eventLog,
+        contains(
+            kIsWeb ? 'slider.end {value: 20}' : 'slider.end {value: 20.0}'));
+  });
+}
+
+// slide to value for material slider in tests
+Future<void> _slideToValue(
+    WidgetTester widgetTester, Finder slider, double value,
+    {double paddingOffset = 24.0}) async {
+  final Offset zeroPoint = widgetTester.getTopLeft(slider) +
+      Offset(paddingOffset, widgetTester.getSize(slider).height / 2);
+  final double totalWidth =
+      widgetTester.getSize(slider).width - (2 * paddingOffset);
+  final double calculateOffset = value * (totalWidth / 100);
+  await widgetTester.dragFrom(zeroPoint, Offset(calculateOffset, 0));
 }

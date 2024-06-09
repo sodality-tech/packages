@@ -1,6 +1,33 @@
-## NEXT
+## 2.5.0
+
+* Migrates ExoPlayer to Media3-ExoPlayer 1.3.1.
+
+## 2.4.17
+
+* Revert Impeller support.
+
+## 2.4.16
+
+* [Supports Impeller](https://docs.flutter.dev/release/breaking-changes/android-surface-plugins).
+
+## 2.4.15
+
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+* Removes support for apps using the v1 Android embedding.
+
+## 2.4.14
+
+* Calls `onDestroy` instead of `initialize` in onDetachedFromEngine.
+
+## 2.4.13
+
+* Updates minSdkVersion to 19.
+* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+
+## 2.4.12
 
 * Updates compileSdk version to 34.
+* Adds error handling for `BehindLiveWindowException`, which may occur upon live-video playback failure.
 
 ## 2.4.11
 

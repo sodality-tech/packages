@@ -99,7 +99,15 @@ class AndroidWebViewController extends PlatformWebViewController {
 
   /// The native [android_webview.WebView] being controlled.
   late final android_webview.WebView _webView =
-      _androidWebViewParams.androidWebViewProxy.createAndroidWebView();
+      _androidWebViewParams.androidWebViewProxy.createAndroidWebView(
+          onScrollChanged: withWeakReferenceTo(this,
+              (WeakReference<AndroidWebViewController> weakReference) {
+    return (int left, int top, int oldLeft, int oldTop) async {
+      final void Function(ScrollPositionChange)? callback =
+          weakReference.target?._onScrollPositionChangedCallback;
+      callback?.call(ScrollPositionChange(left.toDouble(), top.toDouble()));
+    };
+  }));
 
   late final android_webview.WebChromeClient _webChromeClient =
       _androidWebViewParams.androidWebViewProxy.createAndroidWebChromeClient(
@@ -340,6 +348,9 @@ class AndroidWebViewController extends PlatformWebViewController {
   Future<String> Function(JavaScriptTextInputDialogRequest request)?
       _onJavaScriptPrompt;
 
+  void Function(ScrollPositionChange scrollPositionChange)?
+      _onScrollPositionChangedCallback;
+
   /// Whether to enable the platform's webview content debugging tools.
   ///
   /// Defaults to false.
@@ -558,6 +569,13 @@ class AndroidWebViewController extends PlatformWebViewController {
   @override
   Future<void> setUserAgent(String? userAgent) =>
       _webView.settings.setUserAgentString(userAgent);
+
+  @override
+  Future<void> setOnScrollPositionChange(
+      void Function(ScrollPositionChange scrollPositionChange)?
+          onScrollPositionChange) async {
+    _onScrollPositionChangedCallback = onScrollPositionChange;
+  }
 
   /// Sets the restrictions that apply on automatic media playback.
   Future<void> setMediaPlaybackRequiresUserGesture(bool require) {
@@ -1279,6 +1297,25 @@ class AndroidNavigationDelegate extends PlatformNavigationDelegate {
           callback(url);
         }
       },
+      onReceivedHttpError: (
+        android_webview.WebView webView,
+        android_webview.WebResourceRequest request,
+        android_webview.WebResourceResponse response,
+      ) {
+        if (weakThis.target?._onHttpError != null) {
+          weakThis.target!._onHttpError!(
+            HttpResponseError(
+              request: WebResourceRequest(
+                uri: Uri.parse(request.url),
+              ),
+              response: WebResourceResponse(
+                uri: null,
+                statusCode: response.statusCode,
+              ),
+            ),
+          );
+        }
+      },
       onReceivedRequestError: (
         android_webview.WebView webView,
         android_webview.WebResourceRequest request,
@@ -1411,6 +1448,7 @@ class AndroidNavigationDelegate extends PlatformNavigationDelegate {
 
   PageEventCallback? _onPageFinished;
   PageEventCallback? _onPageStarted;
+  HttpResponseErrorCallback? _onHttpError;
   ProgressCallback? _onProgress;
   WebResourceErrorCallback? _onWebResourceError;
   NavigationRequestCallback? _onNavigationRequest;
@@ -1426,7 +1464,11 @@ class AndroidNavigationDelegate extends PlatformNavigationDelegate {
     final LoadRequestCallback? onLoadRequest = _onLoadRequest;
     final NavigationRequestCallback? onNavigationRequest = _onNavigationRequest;
 
-    if (onNavigationRequest == null || onLoadRequest == null) {
+    // The client is only allowed to stop navigations that target the main frame because
+    // overridden URLs are passed to `loadUrl` and `loadUrl` cannot load a subframe.
+    if (!isForMainFrame ||
+        onNavigationRequest == null ||
+        onLoadRequest == null) {
       return;
     }
 
@@ -1483,6 +1525,13 @@ class AndroidNavigationDelegate extends PlatformNavigationDelegate {
     PageEventCallback onPageFinished,
   ) async {
     _onPageFinished = onPageFinished;
+  }
+
+  @override
+  Future<void> setOnHttpError(
+    HttpResponseErrorCallback onHttpError,
+  ) async {
+    _onHttpError = onHttpError;
   }
 
   @override
