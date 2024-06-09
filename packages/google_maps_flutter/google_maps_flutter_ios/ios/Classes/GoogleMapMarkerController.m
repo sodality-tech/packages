@@ -96,7 +96,6 @@
 
 
   self.marker.appearAnimation = kGMSMarkerAnimationPop;
-  self.marker.opacity = 0.5;
 
   NSNumber *alpha = data[@"alpha"];
   if (alpha && alpha != (id)[NSNull null]) {
