@@ -109,6 +109,9 @@
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar
                    screenScale:(CGFloat)screenScale {
+
+  self.marker.appearAnimation = kGMSMarkerAnimationPop;
+
   NSNumber *alpha = FGMGetValueOrNilFromDict(data, @"alpha");
   if (alpha) {
     [self setAlpha:[alpha floatValue]];
